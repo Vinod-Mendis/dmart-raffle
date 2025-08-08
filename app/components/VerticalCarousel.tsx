@@ -98,7 +98,7 @@ const VerticalCarousel: React.FC<VerticalCarouselProps> = ({
 
     if (isActive) {
       return {
-        className: "opacity-100 text-blue-600 font-bold",
+        className: "opacity-100 text-yellow-600 font-bold",
         textSize: "text-7xl", // ← ACTIVE ITEM SIZE - Change this for middle item (options: text-xs, text-sm, text-base, text-lg, text-xl, text-2xl, text-3xl, text-4xl, text-5xl, text-6xl, text-7xl, text-8xl, text-9xl)
         transform: `translateY(${placement}px)`,
         blur: "", // No blur for active item
@@ -139,7 +139,7 @@ const VerticalCarousel: React.FC<VerticalCarouselProps> = ({
     }
 
     return {
-      className: `${opacity} text-gray-700 font-medium transition-all duration-300 ${blur}`,
+      className: `${opacity} text-white font-medium transition-all duration-300 ${blur}`,
       textSize,
       transform: `translateY(${placement}px)`,
       blur,
@@ -155,7 +155,7 @@ const VerticalCarousel: React.FC<VerticalCarouselProps> = ({
   };
 
   return (
-    <div className="flex justify-center items-center p-8 w-full">
+    <div className="flex justify-center items-center p-8 w-full relative z-30">
       <div className="flex flex-col items-center w-full max-w-6xl">
         <div className="flex flex-col items-center w-full">
           <div className="relative h-[800px] w-full overflow-hidden">
@@ -170,7 +170,7 @@ const VerticalCarousel: React.FC<VerticalCarouselProps> = ({
                     type="button"
                     onClick={() => handleItemClick(i)}
                     className={cn(
-                      "absolute flex items-center justify-center cursor-pointer transition-all duration-500 ease-in-out text-center whitespace-nowrap",
+                      "absolute flex items-center justify-center transition-all duration-500 ease-in-out text-center whitespace-nowrap",
                       styles.className,
                       styles.textSize
                     )}
