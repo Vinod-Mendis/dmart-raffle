@@ -82,6 +82,7 @@ const carouselData = [
 
 export default function MyPage() {
   const [status, setStatus] = useState("raffle");
+  const [raffleTimeInterval, setRaffleTimeInterval] = useState(400);
   const [showWinnerDetails, setShowWinnerDetails] = useState(false);
   const [selectedWinner, setSelectedWinner] = useState(carouselData[0]);
   const handleItemSelect = (item: any, index: number) => {
@@ -100,12 +101,16 @@ export default function MyPage() {
     setShowWinnerDetails(false);
   };
   const handleShowWinner = () => {
-    setStatus("winner-name");
-    // setSelectedWinner({})
+    setRaffleTimeInterval(150);
     setShowWinnerDetails(false);
-    handleConfettiClick();
+    setTimeout(() => {
+      setStatus("winner-name");
+      handleConfettiClick();
+    }, 5000);
+    // setSelectedWinner({})
   };
   const handleShowWinnerDetails = () => {
+    setRaffleTimeInterval(400);
     // setSelectedWinner({})
     setShowWinnerDetails(true);
   };
@@ -117,7 +122,7 @@ export default function MyPage() {
       {/* Blur shadow blob */}
       <div className="w-[45rem] h-52 bg-white/20 rounded-full blur-3xl absolute z-10"></div>
       {/* logo */};
-      <AnimatePresence>
+      {/* <AnimatePresence>
         {status === "raffle" && (
           <motion.div
             key="raffle-logo"
@@ -133,7 +138,7 @@ export default function MyPage() {
             />
           </motion.div>
         )}
-      </AnimatePresence>
+      </AnimatePresence> */}
       {/* Background image */}
       <div className="w-full h-screen absolute inset-0 z-0">
         <img
@@ -173,11 +178,11 @@ export default function MyPage() {
         <VerticalCarousel
           data={carouselData}
           onItemSelect={handleItemSelect}
-          autoPlayInterval={400}
+          autoPlayInterval={raffleTimeInterval}
         />
       )}
       {status === "winner-name" && (
-        <motion.div className="flex flex-col gap-4 relative z-30">
+        <motion.div className="flex flex-col items-center gap-4 relative z-30">
           <AnimatePresence>
             {showWinnerDetails && (
               <motion.div

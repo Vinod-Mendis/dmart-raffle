@@ -24,7 +24,7 @@ const VerticalCarousel: React.FC<VerticalCarouselProps> = ({
 }) => {
   const [activeIndex, setActiveIndex] = useState<number>(0);
 
-  // Auto-play effect
+  // Auto-play effect with smooth casino-style rolling
   useEffect(() => {
     if (data.length <= 1) return;
 
@@ -87,62 +87,64 @@ const VerticalCarousel: React.FC<VerticalCarouselProps> = ({
 
     const isVisible = Math.abs(placement) <= visibleStyleThreshold;
 
+    // Calculate smooth transition duration based on autoPlayInterval
+    // For fast intervals (casino effect), use shorter transitions
+    // For slow intervals, use longer transitions for smoothness
+    const transitionDuration = Math.max(autoPlayInterval * 0.8, 50); // At least 50ms, max 80% of interval
+
+    // Check if we should apply uniform blur (fast rolling effect)
+    const isFastRolling = autoPlayInterval <= 200;
+    const uniformBlurAmount = 8; // Consistent blur for fast rolling
+
     if (!isVisible && !isActive) {
       return {
         className: "opacity-0",
-        textSize: "",
+        fontSize: 16, // Base font size for invisible items
         transform: `translateY(${placement}px)`,
-        blur: "",
+        blur: isFastRolling ? uniformBlurAmount : 0,
+        transitionDuration,
       };
     }
 
     if (isActive) {
       return {
         className: "opacity-100 text-yellow-600 font-bold",
-        textSize: "text-7xl", // ← ACTIVE ITEM SIZE - Change this for middle item (options: text-xs, text-sm, text-base, text-lg, text-xl, text-2xl, text-3xl, text-4xl, text-5xl, text-6xl, text-7xl, text-8xl, text-9xl)
+        fontSize: 72, // ← ACTIVE ITEM SIZE - Change this for middle item (pixels)
         transform: `translateY(${placement}px)`,
-        blur: "", // No blur for active item
+        blur: isFastRolling ? uniformBlurAmount : 0, // Blur middle text if fast rolling
+        transitionDuration,
       };
     }
 
-    // Progressive sizing based on distance from active item
-    let textSize = "";
-    let opacity = "";
-    let blur = "";
+    // Smooth progressive sizing based on distance from active item
+    // Using mathematical interpolation for smooth transitions
+    const maxFontSize = 72; // Active item font size
+    const minFontSize = 20; // Furthest visible item font size
+    const maxDistance = 5; // Maximum distance we care about for sizing
 
-    switch (distance) {
-      case 1:
-        textSize = "text-5xl"; // ← 1 STEP AWAY SIZE - Change this for items next to middle
-        opacity = "opacity-70";
-        blur = "blur-sm"; // Light blur
-        break;
-      case 2:
-        textSize = "text-4xl"; // ← 2 STEPS AWAY SIZE - Change this for items further out
-        opacity = "opacity-50";
-        blur = "blur-md"; // Medium blur
-        break;
-      case 3:
-        textSize = "text-3xl"; // ← 3 STEPS AWAY SIZE - Change this for items even further
-        opacity = "opacity-35";
-        blur = "blur-lg"; // More blur
-        break;
-      case 4:
-        textSize = "text-2xl"; // ← 4 STEPS AWAY SIZE - Now visible
-        opacity = "opacity-25";
-        blur = "blur-xl"; // Heavy blur
-        break;
-      default:
-        textSize = "text-xl"; // ← 5+ STEPS AWAY SIZE - For any items beyond 4 steps
-        opacity = "opacity-15";
-        blur = "blur-2xl"; // Maximum blur
-        break;
-    }
+    // Clamp distance to maxDistance for consistent behavior
+    const clampedDistance = Math.min(distance, maxDistance);
+
+    // Calculate font size using exponential decay for smoother transitions
+    const fontSizeRatio = Math.pow(0.7, clampedDistance); // 0.7 creates a nice decay curve
+    const fontSize = Math.max(minFontSize, maxFontSize * fontSizeRatio);
+
+    // Calculate opacity with smooth decay
+    const opacityRatio = Math.pow(0.8, clampedDistance);
+    const opacity = Math.max(0.15, opacityRatio);
+
+    // Calculate blur - uniform for fast rolling, progressive for slow rolling
+    const blurAmount = isFastRolling
+      ? uniformBlurAmount
+      : Math.min(clampedDistance * 3, 15);
 
     return {
-      className: `${opacity} text-white font-medium transition-all duration-300 ${blur}`,
-      textSize,
+      className: `text-white font-medium`,
+      fontSize: Math.round(fontSize),
+      opacity,
       transform: `translateY(${placement}px)`,
-      blur,
+      blur: blurAmount,
+      transitionDuration,
     };
   };
 
@@ -170,13 +172,16 @@ const VerticalCarousel: React.FC<VerticalCarouselProps> = ({
                     type="button"
                     onClick={() => handleItemClick(i)}
                     className={cn(
-                      "absolute flex items-center justify-center transition-all duration-500 ease-in-out text-center whitespace-nowrap",
-                      styles.className,
-                      styles.textSize
+                      "absolute flex items-center justify-center text-center whitespace-nowrap",
+                      styles.className
                     )}
                     key={item.id}
                     style={{
                       transform: styles.transform,
+                      fontSize: `${styles.fontSize}px`,
+                      opacity: styles.opacity,
+                      filter: `blur(${styles.blur}px)`,
+                      transition: `all ${styles.transitionDuration}ms linear`, // Linear for casino effect, dynamic duration
                     }}
                     aria-label={`Select ${item.text}`}>
                     {item.text}
