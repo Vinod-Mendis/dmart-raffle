@@ -9,30 +9,50 @@ import FloatingStars from "./components/FloatingStars";
 import LoaderSVG from "./components/LoaderSVG";
 import io from "socket.io-client";
 
-// Remove the hardcoded carouselData array
+// Raw JSON data interface (matches your JSON structure)
+interface RawRaffleData {
+  BARCODE: string | number;
+  AREA: string;
+  "BP CODE": number;
+  "BP NAME": string;
+  "OUTLET CODE": string;
+  "OUTLET NAME": string;
+  LOCATION: string;
+  "CHAIN/ IND": string;
+  TIER: string;
+  HEADCOUNT: number;
+  "AWARD Y/N": string;
+}
+
+// Transformed carousel data interface (what your app uses)
+interface CarouselData {
+  id: number;
+  text: string;
+  category: string;
+  image: string;
+  bpName: string;
+  bpCode: number;
+  outletCode: string;
+  area: string;
+  location: string;
+  tier: string;
+  headcount: number;
+  award: string;
+}
 
 export default function MyPage() {
-  const [isConnected, setIsConnected] = useState(false);
-  const [socket, setSocket] = useState(null);
-  const [logs, setLogs] = useState([]);
   const [status, setStatus] = useState("IDLE");
-  const [selectedEntry, setSelectedEntry] = useState(null);
-  const [isWinnerRevealed, setIsWinnerRevealed] = useState(false);
-
-  // Add state for carousel data loaded from JSON
-  const [carouselData, setCarouselData] = useState([]);
-
-  // Winner data state - will be populated from socket data
+  const [carouselData, setCarouselData] = useState<CarouselData[]>([]);
+  const [preloadedBlobUrl, setPreloadedBlobUrl] = useState<string | null>(null);
   const [winnerData, setWinnerData] = useState({
     bpName: "",
     outletName: "",
     imageUrl: "",
   });
-
   const [raffleTimeInterval, setRaffleTimeInterval] = useState(400);
   const [showWinnerDetails, setShowWinnerDetails] = useState(false);
 
-  const confettiRef = useRef(null);
+  const confettiRef = useRef<{ trigger: () => void }>(null);
 
   const handleConfettiClick = () => {
     confettiRef.current?.trigger();
@@ -46,21 +66,23 @@ export default function MyPage() {
         const jsonData = await response.json();
 
         // Transform the JSON data to carousel format
-        const transformedData = jsonData.map((item, index) => ({
-          id: index + 1,
-          text: item["OUTLET NAME"], // Use the outlet name from JSON
-          category: item["CHAIN/ IND"], // Optional: use chain/individual info
-          image:
-            "https://t4.ftcdn.net/jpg/03/83/25/83/360_F_383258331_D8imaEMl8Q3lf7EKU2Pi78Cn0R7KkW9o.jpg", // Default image
-          bpName: item["BP NAME"],
-          bpCode: item["BP CODE"],
-          outletCode: item["OUTLET CODE"],
-          area: item["AREA"],
-          location: item["LOCATION"],
-          tier: item["TIER"],
-          headcount: item["HEADCOUNT"],
-          award: item["AWARD Y/N"],
-        }));
+        const transformedData: CarouselData[] = jsonData.map(
+          (item: RawRaffleData, index: number) => ({
+            id: index + 1,
+            text: item["OUTLET NAME"], // Use the outlet name from JSON
+            category: item["CHAIN/ IND"], // Optional: use chain/individual info
+            image:
+              "https://t4.ftcdn.net/jpg/03/83/25/83/360_F_383258331_D8imaEMl8Q3lf7EKU2Pi78Cn0R7KkW9o.jpg", // Default image
+            bpName: item["BP NAME"],
+            bpCode: item["BP CODE"],
+            outletCode: item["OUTLET CODE"],
+            area: item["AREA"],
+            location: item["LOCATION"],
+            tier: item["TIER"],
+            headcount: item["HEADCOUNT"],
+            award: item["AWARD Y/N"],
+          })
+        );
 
         setCarouselData(transformedData);
       } catch (error) {
@@ -85,13 +107,11 @@ export default function MyPage() {
     // Connect to the socket
     newSocket.on("connect", () => {
       console.log("Connected to backend server");
-      setIsConnected(true);
     });
 
     // Disconnect to the socket
     newSocket.on("disconnect", () => {
       console.log("Disconnected from backend server");
-      setIsConnected(false);
     });
 
     // show start (just to say it started )- (raffle 1)
@@ -115,7 +135,6 @@ export default function MyPage() {
       // Reset to raffle screen
       setStatus("raffle");
       setShowWinnerDetails(false);
-      setSelectedEntry(data.selectedEntry);
 
       // Update winner data from socket response
       if (data.selectedEntry) {
@@ -126,6 +145,22 @@ export default function MyPage() {
           outletName: userData.outletName,
           imageUrl: userData.imageUrl,
         });
+        // ADD THIS: Preload the image
+        if (userData.imageUrl) {
+          console.log("Image:", userData.imageUrl);
+
+          fetch(userData.imageUrl)
+            .then((response) => response.blob())
+            .then((blob) => {
+              const blobUrl = URL.createObjectURL(blob);
+              setPreloadedBlobUrl(blobUrl);
+              console.log("Image preloaded as blob successfully");
+            })
+            .catch((error) => {
+              console.log("Failed to preload image:", error);
+              setPreloadedBlobUrl(null);
+            });
+        }
       }
     });
 
@@ -155,12 +190,12 @@ export default function MyPage() {
       window.location.reload();
       setStatus("IDLE");
       setShowWinnerDetails(false);
-
-      setSelectedEntry(null);
-      setWinnerData(null);
+      setWinnerData({
+        bpName: "",
+        outletName: "",
+        imageUrl: "",
+      });
     });
-
-    setSocket(newSocket);
 
     return () => {
       newSocket.disconnect();
@@ -251,17 +286,27 @@ export default function MyPage() {
                 transition={{ duration: 0.5, ease: "easeOut" }}
                 layout // animates space changes
               >
-                <motion.img
-                  src={
-                    winnerData.imageUrl ||
-                    "https://t4.ftcdn.net/jpg/03/83/25/83/360_F_383258331_D8imaEMl8Q3lf7EKU2Pi78Cn0R7KkW9o.jpg"
-                  }
-                  alt="carousel"
-                  className="w-full h-full object-cover"
-                  initial={{ scale: 1.1 }}
-                  animate={{ scale: 1 }}
-                  transition={{ duration: 0.8, ease: "easeOut" }}
-                />
+                {preloadedBlobUrl ? (
+                  <motion.img
+                    src={preloadedBlobUrl}
+                    alt="carousel"
+                    className="w-full h-full object-cover"
+                    initial={{ scale: 1.1 }}
+                    animate={{ scale: 1 }}
+                    transition={{ duration: 0.8, ease: "easeOut" }}
+                  />
+                ) : (
+                  <motion.img
+                    src={
+                      "https://t4.ftcdn.net/jpg/03/83/25/83/360_F_383258331_D8imaEMl8Q3lf7EKU2Pi78Cn0R7KkW9o.jpg"
+                    }
+                    alt="carousel"
+                    className="w-full h-full object-cover"
+                    initial={{ scale: 1.1 }}
+                    animate={{ scale: 1 }}
+                    transition={{ duration: 0.8, ease: "easeOut" }}
+                  />
+                )}
               </motion.div>
             )}
           </AnimatePresence>

@@ -95,9 +95,9 @@ const ConfettiPiece = ({ piece }: { piece: ConfettiPieceType }) => {
         x: piece.drift,
       },
       transition: {
-        duration: 1.8 + Math.random() * 0.8, // Slightly faster animation
+        duration: 1.8 + Math.random() * 0.8,
         delay: piece.delay,
-        ease: "easeIn",
+        // Remove the ease line completely
       },
     }),
     [piece.y, piece.rotation, piece.drift, piece.delay]

@@ -10,21 +10,28 @@ import {
   Play,
   Square,
   Trophy,
-  Eye,
   Activity,
   Clock,
   Zap,
   RefreshCcw,
 } from "lucide-react";
 
+interface SelectedEntry {
+  bpName: string;
+  outletName: string;
+  imageUrl: string;
+}
+
 export default function EventDashboard() {
   const [isConnected, setIsConnected] = useState(false);
-  const [socket, setSocket] = useState(null);
-  const [logs, setLogs] = useState([]);
+  const [socket, setSocket] = useState<any>(null); // eslint-disable-line @typescript-eslint/no-explicit-any
+  const [logs, setLogs] = useState<
+    Array<{ message: string; type: string; timestamp: string }>
+  >([]);
   const [status, setStatus] = useState("IDLE");
-  const [raffleActive, setRaffleActive] = useState(false);
-  const [selectedEntry, setSelectedEntry] = useState(null);
-  const [isWinnerRevealed, setIsWinnerRevealed] = useState(false);
+  const [selectedEntry, setSelectedEntry] = useState<SelectedEntry | null>(
+    null
+  );
 
   // Winner data state - will be populated from socket data
   const [winnerData, setWinnerData] = useState({
@@ -32,10 +39,6 @@ export default function EventDashboard() {
     outletName: "",
     imageUrl: "",
   });
-
-  const [raffleTimeInterval, setRaffleTimeInterval] = useState(400);
-  const [showWinnerDetails, setShowWinnerDetails] = useState(false);
-  const [selectedWinner, setSelectedWinner] = useState("");
 
   const handleIDLEScreen = () => {
     if (socket && isConnected) {
@@ -56,7 +59,6 @@ export default function EventDashboard() {
   };
 
   const handleShowWinner = () => {
-    setShowWinnerDetails(false);
     if (socket && isConnected) {
       console.log("Emitting stop-raffle event");
       socket.emit("stop-raffle");
@@ -96,15 +98,12 @@ export default function EventDashboard() {
 
     newSocket.on("raffle-stopped", (data) => {
       console.log("Raffle stopped confirmation:", data);
-      setRaffleActive(false);
       addLog("Raffle stopped", "warning");
     });
 
     newSocket.on("frontend-start-raffle", (data) => {
       console.log("Received frontend-start-raffle event:", data);
       console.log("Selected raffle entry:", data.selectedEntry.bpName);
-
-      setIsWinnerRevealed(false);
       setStatus("raffle");
       setSelectedEntry(data.selectedEntry);
 
@@ -139,10 +138,13 @@ export default function EventDashboard() {
     newSocket.on("frontend-idle", () => {
       console.log("Received frontend-idle event");
       setStatus("IDLE");
-      setShowWinnerDetails(false);
       addLog("Switched to IDLE Screen", "info");
       setSelectedEntry(null);
-      setWinnerData(null);
+      setWinnerData({
+        bpName: "",
+        outletName: "",
+        imageUrl: "",
+      });
     });
 
     setSocket(newSocket);
@@ -152,7 +154,7 @@ export default function EventDashboard() {
     };
   }, []);
 
-  const addLog = (message: any, type = "info") => {
+  const addLog = (message: string, type = "info") => {
     const timestamp = new Date().toLocaleTimeString();
     setLogs((prev) => [...prev.slice(-9), { message, type, timestamp }]);
   };
@@ -206,7 +208,7 @@ export default function EventDashboard() {
           window.location.reload();
         }}>
         <RefreshCcw size={20} />
-        Refresh
+        Refresh Dashboard
       </button>
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}

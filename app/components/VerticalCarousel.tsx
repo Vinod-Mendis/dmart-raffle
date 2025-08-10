@@ -44,13 +44,13 @@ const VerticalCarousel: React.FC<VerticalCarouselProps> = ({
   }, [data.length, autoPlayInterval, onItemSelect, data]);
 
   // Used to determine which items appear above the active item
-  const halfwayIndex = Math.ceil(data.length / 2);
+  // const halfwayIndex = Math.ceil(data.length / 2);
 
   // Used to determine the height/spacing of each item
   const itemHeight = 120; // ← ITEM SPACING - Increase this if you use larger text sizes (recommended: 80-200px)
 
   // Used to determine at what point an item is moved from the top to the bottom
-  const shuffleThreshold = halfwayIndex * itemHeight;
+  // const shuffleThreshold = halfwayIndex * itemHeight;
 
   // Used to determine which items should be visible - INCREASED to show 3 items above and below
   const visibleStyleThreshold = itemHeight * 3.5; // Shows 3-4 items above and below the active item
