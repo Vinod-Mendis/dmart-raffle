@@ -1,10 +1,22 @@
 /** @format */
+
 "use client";
 
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import io from "socket.io-client";
+import {
+  Wifi,
+  WifiOff,
+  Play,
+  Square,
+  Trophy,
+  Eye,
+  Activity,
+  Clock,
+  Zap,
+} from "lucide-react";
 
-export default function page() {
+export default function EventDashboard() {
   const [isConnected, setIsConnected] = useState(false);
   const [socket, setSocket] = useState(null);
   const [logs, setLogs] = useState([]);
@@ -27,7 +39,7 @@ export default function page() {
   const handleIDLEScreen = () => {
     if (socket && isConnected) {
       console.log("Emitting start-raffle event");
-      socket.emit("idle-screen"); // start raffle and store data
+      socket.emit("idle-screen");
     } else {
       console.log("Socket not connected");
     }
@@ -36,7 +48,7 @@ export default function page() {
   const handleShowRaffle = () => {
     if (socket && isConnected) {
       console.log("Emitting start-raffle event");
-      socket.emit("start-raffle"); // start raffle and store data
+      socket.emit("start-raffle");
     } else {
       console.log("Socket not connected");
     }
@@ -61,7 +73,6 @@ export default function page() {
     }
   };
 
-  // Add this useEffect to see when winnerData actually updates
   useEffect(() => {
     console.log("Winner data updated:", winnerData);
   }, [winnerData]);
@@ -100,55 +111,43 @@ export default function page() {
     newSocket.on("frontend-start-raffle", (data) => {
       console.log("Received frontend-start-raffle event:", data);
       console.log("Selected raffle entry:", data.selectedEntry.bpName);
-      //   playAudio(); // Play audio when raffle stops
 
-      // Reset to main screen
       setIsWinnerRevealed(false);
       setStatus("raffle");
       setSelectedEntry(data.selectedEntry);
 
-      // Update winner data from socket response
       if (data.selectedEntry) {
         const userData = data.selectedEntry;
-
         setWinnerData({
           bpName: userData.bpName,
           outletName: userData.outletName,
           imageUrl: userData.imageUrl,
         });
       }
-
       addLog(
         `Winner data received: ${data.selectedEntry?.bpName || "Unknown"}`,
         "info"
       );
     });
 
-    // Listen for raffle stop event - show the winner
     newSocket.on("frontend-stop-raffle", (data) => {
       console.log("Received frontend-stop-raffle event:", data);
       console.log("Showing winner");
-      //   playAudio(); // Play audio when raffle stops
-
       setStatus("winner-name");
-      // setRaffleStatus("show-winner-details");
-
       addLog(`Winner is: ${winnerData?.bpName || "Unknown"}`, "info");
     });
 
     newSocket.on("frontend-show-winner-details", () => {
       console.log("Showing winner details");
       setShowWinnerDetails(true);
-
       addLog("Revealing winner", "success");
     });
 
     newSocket.on("frontend-idle", () => {
       console.log("Received frontend-idle event");
-      setStatus("IDLE"); // Or whatever your idle screen state is
+      setStatus("IDLE");
       setShowWinnerDetails(false);
-      addLog("switched to IDLE Screen", "info");
-
+      addLog("Switched to IDLE Screen", "info");
       setSelectedEntry(null);
       setWinnerData(null);
     });
@@ -165,83 +164,201 @@ export default function page() {
     setLogs((prev) => [...prev.slice(-9), { message, type, timestamp }]);
   };
 
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "IDLE":
+        return "bg-slate-100 text-slate-800 border-slate-200";
+      case "raffle":
+        return "bg-yellow-100 text-yellow-800 border-yellow-200";
+      case "winner-name":
+        return "bg-green-100 text-green-800 border-green-200";
+      default:
+        return "bg-gray-100 text-gray-800 border-gray-200";
+    }
+  };
+
+  const getLogTypeStyles = (type: string) => {
+    switch (type) {
+      case "success":
+        return "border-l-green-500 bg-green-50 text-green-800";
+      case "error":
+        return "border-l-red-500 bg-red-50 text-red-800";
+      case "warning":
+        return "border-l-yellow-500 bg-yellow-50 text-yellow-800";
+      default:
+        return "border-l-blue-500 bg-blue-50 text-blue-800";
+    }
+  };
+
   return (
-    <div className="h-screen overflow-hidden w-full flex flex-col justify-center items-center">
-      <div
-        className={`text-center mb-6 p-4 rounded-lg border ${
-          isConnected
-            ? "bg-green-100 border-green-300 text-green-800"
-            : "bg-red-100 border-red-300 text-red-800"
-        }`}>
-        Connection Status: {isConnected ? "Connected" : "Disconnected"}
-      </div>
-
-      {status && (
-        <div className="">
-          <p className="">{status} </p>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-6">
+      <div className="max-w-7xl mx-auto space-y-6">
+        {/* Header */}
+        <div className="text-center space-y-2">
+          <h1 className="text-4xl font-bold text-slate-800 flex items-center justify-center gap-3">
+            <Zap className="h-10 w-10 text-yellow-500" />
+            Event Raffle Dashboard
+          </h1>
+          <p className="text-slate-600">
+            Real-time raffle control and monitoring
+          </p>
         </div>
-      )}
-      <div className="bg-slate-400 p-4 flex flex-col gap-4 z-50">
-        <button
-          className="rounded-md p-2 bg-pink-400 cursor-pointer hover:scale-95 transition"
-          onClick={handleIDLEScreen}>
-          IDLE
-        </button>
-        <button
-          className="rounded-md p-2 bg-yellow-400 cursor-pointer hover:scale-95 transition"
-          onClick={handleShowRaffle}>
-          raffle
-        </button>
-        <button
-          className="rounded-md p-2 bg-blue-400 cursor-pointer hover:scale-95 transition"
-          onClick={handleShowWinner}>
-          Show name
-        </button>
-        <button
-          className="rounded-md p-2 bg-pink-400 cursor-pointer hover:scale-95 transition"
-          onClick={handleShowWinnerDetails}>
-          Show details
-        </button>
-      </div>
-      <div className="bg-white p-6 rounded-lg shadow-lg">
-        <h3 className="text-xl font-semibold text-gray-700 mb-4 pb-2 border-b-2 border-gray-200">
-          Activity Log
-        </h3>
 
-        <div className=" bg-gray-50 p-4 rounded">
-          {logs.length === 0 ? (
-            <p className="text-gray-500 italic">No activity yet...</p>
-          ) : (
-            logs.map((log, index) => (
-              <div
-                key={index}
-                className={`mb-2 p-3 bg-white rounded border-l-4 ${
-                  log.type === "success"
-                    ? "border-green-500"
-                    : log.type === "error"
-                    ? "border-red-500"
-                    : log.type === "warning"
-                    ? "border-yellow-500"
-                    : "border-blue-500"
+        {/* Status Cards Row */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Connection Status */}
+          <div className="bg-white rounded-lg border-2 border-gray-200 shadow-sm">
+            <div className="p-6 pb-3">
+              <h3 className="flex items-center gap-2 text-lg font-semibold text-gray-900">
+                {isConnected ? (
+                  <Wifi className="h-5 w-5 text-green-500" />
+                ) : (
+                  <WifiOff className="h-5 w-5 text-red-500" />
+                )}
+                Connection Status
+              </h3>
+            </div>
+            <div className="px-6 pb-6">
+              <span
+                className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
+                  isConnected
+                    ? "bg-green-100 text-green-800 border border-green-200"
+                    : "bg-red-100 text-red-800 border border-red-200"
                 }`}>
-                <span className="text-xs text-gray-500 mr-2">
-                  [{log.timestamp}]
-                </span>
-                <span
-                  className={`${
-                    log.type === "success"
-                      ? "text-green-600"
-                      : log.type === "error"
-                      ? "text-red-600"
-                      : log.type === "warning"
-                      ? "text-yellow-600"
-                      : "text-gray-700"
-                  }`}>
-                  {log.message}
-                </span>
-              </div>
-            ))
-          )}
+                {isConnected ? "Connected" : "Disconnected"}
+              </span>
+              {isConnected && (
+                <p className="text-sm text-slate-600 mt-2">
+                  Real-time communication active
+                </p>
+              )}
+            </div>
+          </div>
+
+          {/* Current Status */}
+          <div className="bg-white rounded-lg border-2 border-gray-200 shadow-sm">
+            <div className="p-6 pb-3">
+              <h3 className="flex items-center gap-2 text-lg font-semibold text-gray-900">
+                <Activity className="h-5 w-5 text-blue-500" />
+                Current Status
+              </h3>
+            </div>
+            <div className="px-6 pb-6">
+              <span
+                className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium border ${getStatusColor(
+                  status
+                )}`}>
+                {status.toUpperCase()}
+              </span>
+              {selectedEntry && (
+                <p className="text-sm text-slate-600 mt-2">
+                  Selected: {selectedEntry.bpName}
+                </p>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Control Panel */}
+        <div className="bg-white rounded-lg border-2 border-gray-200 shadow-sm">
+          <div className="p-6 pb-3">
+            <h3 className="flex items-center gap-2 text-lg font-semibold text-gray-900">
+              <Trophy className="h-5 w-5 text-yellow-500" />
+              Raffle Controls
+            </h3>
+          </div>
+          <div className="px-6 pb-6">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <button
+                onClick={handleIDLEScreen}
+                className={`h-16 flex flex-col items-center justify-center gap-2 rounded-lg border-2 transition-all duration-200 ${
+                  !isConnected
+                    ? "bg-gray-100 border-gray-200 text-gray-400 cursor-not-allowed"
+                    : "bg-white border-gray-300 text-gray-700 hover:bg-slate-50 hover:border-slate-400 active:scale-95"
+                }`}
+                disabled={!isConnected}>
+                <Square className="h-5 w-5" />
+                <span className="text-sm font-medium">IDLE</span>
+              </button>
+
+              <button
+                onClick={handleShowRaffle}
+                className={`h-16 flex flex-col items-center justify-center gap-2 rounded-lg border-2 transition-all duration-200 ${
+                  !isConnected
+                    ? "bg-gray-100 border-gray-200 text-gray-400 cursor-not-allowed"
+                    : "bg-white border-yellow-200 text-yellow-700 hover:bg-yellow-50 hover:border-yellow-300 active:scale-95"
+                }`}
+                disabled={!isConnected}>
+                <Play className="h-5 w-5" />
+                <span className="text-sm font-medium">Start Raffle</span>
+              </button>
+
+              <button
+                onClick={handleShowWinner}
+                className={`h-16 flex flex-col items-center justify-center gap-2 rounded-lg border-2 transition-all duration-200 ${
+                  !isConnected
+                    ? "bg-gray-100 border-gray-200 text-gray-400 cursor-not-allowed"
+                    : "bg-white border-blue-200 text-blue-700 hover:bg-blue-50 hover:border-blue-300 active:scale-95"
+                }`}
+                disabled={!isConnected}>
+                <Trophy className="h-5 w-5" />
+                <span className="text-sm font-medium">Show Winner</span>
+              </button>
+
+              <button
+                onClick={handleShowWinnerDetails}
+                className={`h-16 flex flex-col items-center justify-center gap-2 rounded-lg border-2 transition-all duration-200 ${
+                  !isConnected
+                    ? "bg-gray-100 border-gray-200 text-gray-400 cursor-not-allowed"
+                    : "bg-white border-green-200 text-green-700 hover:bg-green-50 hover:border-green-300 active:scale-95"
+                }`}
+                disabled={!isConnected}>
+                <Eye className="h-5 w-5" />
+                <span className="text-sm font-medium">Show Details</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Activity Log */}
+        <div className="bg-white rounded-lg border-2 border-gray-200 shadow-sm">
+          <div className="p-6 pb-3">
+            <h3 className="flex items-center gap-2 text-lg font-semibold text-gray-900">
+              <Clock className="h-5 w-5 text-slate-500" />
+              Activity Log
+            </h3>
+          </div>
+          <div className="px-6 pb-6">
+            <div className="h-80 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
+              {logs.length === 0 ? (
+                <div className="flex items-center justify-center h-32 text-slate-500">
+                  <div className="text-center">
+                    <Activity className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                    <p className="text-sm">No activity yet...</p>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {logs.map((log, index) => (
+                    <div
+                      key={index}
+                      className={`p-4 rounded-lg border-l-4 ${getLogTypeStyles(
+                        log.type
+                      )}`}>
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <p className="text-sm font-medium">{log.message}</p>
+                        </div>
+                        <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-white border border-gray-200 text-gray-600 ml-2">
+                          {log.timestamp}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       </div>
     </div>
