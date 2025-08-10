@@ -1,1 +1,24 @@
+/** @format */
+
 @import "tailwindcss";
+.gradient-text {
+  background: -webkit-linear-gradient(#4d4fdf, #0f185a);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Scale In/Out Animation */
+@keyframes scaleInOut {
+  0%,
+  100% {
+    transform: scale(0.95);
+  }
+  50% {
+    transform: scale(1);
+  }
+}
+
+/* Example usage */
+.scale-animation {
+  animation: scaleInOut 2s ease-in-out infinite;
+}
