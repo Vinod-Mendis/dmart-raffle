@@ -14,6 +14,7 @@ import {
   Activity,
   Clock,
   Zap,
+  RefreshCcw,
 } from "lucide-react";
 
 export default function EventDashboard() {
@@ -59,15 +60,6 @@ export default function EventDashboard() {
     if (socket && isConnected) {
       console.log("Emitting stop-raffle event");
       socket.emit("stop-raffle");
-    } else {
-      console.log("Socket not connected");
-    }
-  };
-
-  const handleShowWinnerDetails = () => {
-    if (socket && isConnected) {
-      console.log("Emitting stop-raffle event");
-      socket.emit("show-winner-details");
     } else {
       console.log("Socket not connected");
     }
@@ -130,19 +122,20 @@ export default function EventDashboard() {
       );
     });
 
+    // show winner name
     newSocket.on("frontend-stop-raffle", (data) => {
       console.log("Received frontend-stop-raffle event:", data);
       console.log("Showing winner");
-      setStatus("winner-name");
-      addLog(`Winner is: ${winnerData?.bpName || "Unknown"}`, "info");
+      setTimeout(() => {
+        setStatus("winner-name");
+        setTimeout(() => {
+          setStatus("winner-details");
+        }, 3000);
+      }, 2000);
+      addLog(`Showing Winner`, "info");
     });
 
-    newSocket.on("frontend-show-winner-details", () => {
-      console.log("Showing winner details");
-      setShowWinnerDetails(true);
-      addLog("Revealing winner", "success");
-    });
-
+    // Show IDLE
     newSocket.on("frontend-idle", () => {
       console.log("Received frontend-idle event");
       setStatus("IDLE");
@@ -164,13 +157,28 @@ export default function EventDashboard() {
     setLogs((prev) => [...prev.slice(-9), { message, type, timestamp }]);
   };
 
+  const idleBtnDisable =
+    !isConnected || status === "raffle" || status === "winner-name";
+  const raffleBtnDisable =
+    !isConnected ||
+    status == "raffle" ||
+    status === "winner-name" ||
+    status === "winner-details";
+  const winnerBtnDisable =
+    !isConnected ||
+    status == "IDLE" ||
+    status === "winner-name" ||
+    status === "winner-details";
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case "IDLE":
-        return "bg-slate-100 text-slate-800 border-slate-200";
+        return "bg-red-100 text-slate-800 border-red-200";
       case "raffle":
         return "bg-yellow-100 text-yellow-800 border-yellow-200";
       case "winner-name":
+        return "bg-blue-100 text-blue-800 border-blue-200";
+      case "winner-details":
         return "bg-green-100 text-green-800 border-green-200";
       default:
         return "bg-gray-100 text-gray-800 border-gray-200";
@@ -192,12 +200,20 @@ export default function EventDashboard() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-6">
+      <button
+        className="bg-red-400 px-6 py-2 flex gap-2 items-center text-white rounded-md absolute right-4 top-4 transition hover:scale-95 cursor-pointer"
+        onClick={() => {
+          window.location.reload();
+        }}>
+        <RefreshCcw size={20} />
+        Refresh
+      </button>
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
         <div className="text-center space-y-2">
           <h1 className="text-4xl font-bold text-slate-800 flex items-center justify-center gap-3">
             <Zap className="h-10 w-10 text-yellow-500" />
-            Event Raffle Dashboard
+            Raffle Dashboard
           </h1>
           <p className="text-slate-600">
             Real-time raffle control and monitoring
@@ -229,7 +245,7 @@ export default function EventDashboard() {
               </span>
               {isConnected && (
                 <p className="text-sm text-slate-600 mt-2">
-                  Real-time communication active
+                  socket connected succesfully
                 </p>
               )}
             </div>
@@ -268,53 +284,41 @@ export default function EventDashboard() {
             </h3>
           </div>
           <div className="px-6 pb-6">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <button
                 onClick={handleIDLEScreen}
-                className={`h-16 flex flex-col items-center justify-center gap-2 rounded-lg border-2 transition-all duration-200 ${
-                  !isConnected
-                    ? "bg-gray-100 border-gray-200 text-gray-400 cursor-not-allowed"
-                    : "bg-white border-gray-300 text-gray-700 hover:bg-slate-50 hover:border-slate-400 active:scale-95"
+                className={`h-16 flex items-center text-white bg-red-400 justify-center gap-2 rounded-lg transition-all duration-200 ${
+                  idleBtnDisable
+                    ? "opacity-30  cursor-not-allowed"
+                    : " active:scale-95  hover:bg-red-500 cursor-pointer hover:scale-95 group"
                 }`}
-                disabled={!isConnected}>
-                <Square className="h-5 w-5" />
+                disabled={idleBtnDisable}>
+                <Square className="h-5 w-5 group-hover:scale-125 transition" />
                 <span className="text-sm font-medium">IDLE</span>
               </button>
 
               <button
                 onClick={handleShowRaffle}
-                className={`h-16 flex flex-col items-center justify-center gap-2 rounded-lg border-2 transition-all duration-200 ${
-                  !isConnected
-                    ? "bg-gray-100 border-gray-200 text-gray-400 cursor-not-allowed"
-                    : "bg-white border-yellow-200 text-yellow-700 hover:bg-yellow-50 hover:border-yellow-300 active:scale-95"
+                className={`h-16 flex items-center text-white bg-yellow-400  justify-center gap-2 rounded-lg transition-all duration-200 ${
+                  raffleBtnDisable
+                    ? "opacity-30 cursor-not-allowed"
+                    : "hover:bg-yellow-500 active:scale-95 cursor-pointer hover:scale-95 group"
                 }`}
-                disabled={!isConnected}>
-                <Play className="h-5 w-5" />
+                disabled={raffleBtnDisable}>
+                <Play className="h-5 w-5 group-hover:scale-125 transition" />
                 <span className="text-sm font-medium">Start Raffle</span>
               </button>
 
               <button
                 onClick={handleShowWinner}
-                className={`h-16 flex flex-col items-center justify-center gap-2 rounded-lg border-2 transition-all duration-200 ${
-                  !isConnected
-                    ? "bg-gray-100 border-gray-200 text-gray-400 cursor-not-allowed"
-                    : "bg-white border-blue-200 text-blue-700 hover:bg-blue-50 hover:border-blue-300 active:scale-95"
+                className={`h-16 flex items-center text-white bg-blue-400 justify-center gap-2 rounded-lg border-2 transition-all duration-200 ${
+                  winnerBtnDisable
+                    ? "opacity-30 cursor-not-allowed"
+                    : " hover:bg-blue-500 active:scale-95 cursor-pointer hover:scale-95 group"
                 }`}
-                disabled={!isConnected}>
-                <Trophy className="h-5 w-5" />
+                disabled={winnerBtnDisable}>
+                <Trophy className="h-5 w-5 group-hover:scale-125 transition" />
                 <span className="text-sm font-medium">Show Winner</span>
-              </button>
-
-              <button
-                onClick={handleShowWinnerDetails}
-                className={`h-16 flex flex-col items-center justify-center gap-2 rounded-lg border-2 transition-all duration-200 ${
-                  !isConnected
-                    ? "bg-gray-100 border-gray-200 text-gray-400 cursor-not-allowed"
-                    : "bg-white border-green-200 text-green-700 hover:bg-green-50 hover:border-green-300 active:scale-95"
-                }`}
-                disabled={!isConnected}>
-                <Eye className="h-5 w-5" />
-                <span className="text-sm font-medium">Show Details</span>
               </button>
             </div>
           </div>

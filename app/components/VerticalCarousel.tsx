@@ -108,7 +108,7 @@ const VerticalCarousel: React.FC<VerticalCarouselProps> = ({
 
     if (isActive) {
       return {
-        className: "opacity-100 text-blue-500 font-bold",
+        className: "opacity-100 text-violet-300 font-bold",
         fontSize: 72, // ← ACTIVE ITEM SIZE - Change this for middle item (pixels)
         transform: `translateY(${placement}px)`,
         blur: isFastRolling ? uniformBlurAmount : 0, // Blur middle text if fast rolling
