@@ -268,94 +268,112 @@ export default function MyPage() {
         )}
       </AnimatePresence>
 
-      <div
-        className={`flex flex-col ${
-          showWinnerDetails ? "scale-100" : "scale-[300%]"
-        } `}>
+      {/* Main content container with smooth animations */}
+      <motion.div
+        className="flex flex-col items-center justify-center relative z-30"
+        layout
+        transition={{ duration: 0.8, ease: "easeInOut" }}>
+        {/* Casino Roller Container with smooth scaling and positioning */}
         <AnimatePresence>
           {showRaflle && (
-            <CasinoRoller
-              isSpeedUp={isSpeedUp}
-              isStopped={isStopped}
-              selectedNumber={selectedNumber}
-            />
+            <motion.div
+              key="casino-roller-container"
+              className="flex justify-center items-center"
+              initial={{ scale: 3, y: 0 }}
+              animate={{
+                scale: showWinnerDetails ? 1 : 3,
+                y: showWinnerDetails ? 1 : 0,
+              }}
+              transition={{
+                duration: 0.8,
+                ease: "easeInOut",
+                scale: { duration: 0.8 },
+                y: { duration: 0.8 },
+              }}
+              layout>
+              <CasinoRoller
+                isSpeedUp={isSpeedUp}
+                isStopped={isStopped}
+                selectedNumber={selectedNumber}
+              />
+            </motion.div>
           )}
         </AnimatePresence>
-        {showWinnerDetails && (
-          <motion.div className="flex flex-col items-center gap-4 relative z-30">
-            <AnimatePresence>
-              {showWinnerDetails && (
-                <motion.div
-                  key="winner-image"
-                  className="w-96 h-96 rounded-xl overflow-hidden neon-flow-2"
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.8 }}
-                  transition={{ duration: 0.5, ease: "easeOut" }}
-                  layout // animates space changes
-                >
-                  {preloadedBlobUrl ? (
-                    <motion.img
-                      src={preloadedBlobUrl}
-                      alt="carousel"
-                      className="w-full h-full object-cover"
-                      initial={{ scale: 1.1 }}
-                      animate={{ scale: 1 }}
-                      transition={{ duration: 0.8, ease: "easeOut" }}
-                    />
-                  ) : (
-                    <motion.img
-                      src={
-                        "https://t4.ftcdn.net/jpg/03/83/25/83/360_F_383258331_D8imaEMl8Q3lf7EKU2Pi78Cn0R7KkW9o.jpg"
-                      }
-                      alt="carousel"
-                      className="w-full h-full object-cover"
-                      initial={{ scale: 1.1 }}
-                      animate={{ scale: 1 }}
-                      transition={{ duration: 0.8, ease: "easeOut" }}
-                    />
-                  )}
-                </motion.div>
-              )}
-            </AnimatePresence>
 
-            <AnimatePresence>
-              {showWinnerDetails && (
-                <>
-                  <motion.h1
-                    key="winner-text"
-                    className="text-6xl font-semibold text-white"
-                    initial={{ opacity: 0, scale: 1.2 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ duration: 0.6, ease: "easeOut" }}
-                    layout // lets the name move down smoothly when image appears
-                  >
-                    {winnerData.bpName || "no bp name"}
-                  </motion.h1>
-                  <motion.h1
-                    key="winner-category"
-                    className="text-4xl text-violet-300"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: 20 }}
-                    transition={{ duration: 0.5, ease: "easeOut" }}
-                    layout>
-                    {winnerData.outletName || "no outlet name"}
-                  </motion.h1>
-                </>
-              )}
-            </AnimatePresence>
-          </motion.div>
-        )}
-      </div>
+        {/* Winner Details Container */}
+        <AnimatePresence>
+          {showWinnerDetails && (
+            <motion.div
+              key="winner-details-container"
+              className="flex flex-col items-center gap-4 mt-8"
+              initial={{ opacity: 0, y: 50 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 50 }}
+              transition={{
+                duration: 0.6,
+                ease: "easeOut",
+                delay: 0.2, // Slight delay to let casino roller finish moving
+              }}
+              layout>
+              {/* Winner Image */}
+              <motion.div
+                className="w-96 h-96 rounded-xl overflow-hidden neon-flow-2"
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.5, ease: "easeOut", delay: 0.3 }}
+                layout>
+                {preloadedBlobUrl ? (
+                  <motion.img
+                    src={preloadedBlobUrl}
+                    alt="carousel"
+                    className="w-full h-full object-cover"
+                    initial={{ scale: 1.1 }}
+                    animate={{ scale: 1 }}
+                    transition={{ duration: 0.8, ease: "easeOut" }}
+                  />
+                ) : (
+                  <motion.img
+                    src={
+                      "https://t4.ftcdn.net/jpg/03/83/25/83/360_F_383258331_D8imaEMl8Q3lf7EKU2Pi78Cn0R7KkW9o.jpg"
+                    }
+                    alt="carousel"
+                    className="w-full h-full object-cover"
+                    initial={{ scale: 1.1 }}
+                    animate={{ scale: 1 }}
+                    transition={{ duration: 0.8, ease: "easeOut" }}
+                  />
+                )}
+              </motion.div>
 
-      {/* Raffle - Only render if carouselData is loaded */}
-      {/* {status === "raffle" && carouselData.length > 0 && (
-        <VerticalCarousel
-          data={carouselData}
-          autoPlayInterval={raffleTimeInterval}
-        />
-      )} */}
+              {/* Winner Name */}
+              <motion.h1
+                className={`${
+                  winnerData.bpName &&
+                  winnerData.bpName.length >
+                    "WICKREMARATNA LOGISTICS (PVT) LTD".length
+                    ? "text-4xl"
+                    : "text-6xl"
+                } font-semibold text-white text-center`}
+                initial={{ opacity: 0, scale: 1.2 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.6, ease: "easeOut", delay: 0.4 }}
+                layout>
+                {winnerData.bpName || "no bp name"}
+              </motion.h1>
+
+              {/* Winner Category */}
+              <motion.h1
+                className="text-4xl text-violet-300 text-center"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, ease: "easeOut", delay: 0.5 }}
+                layout>
+                {winnerData.outletName || "no outlet name"}
+              </motion.h1>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </motion.div>
 
       {/* Loading state for carousel data */}
       {status === "raffle" && carouselData.length === 0 && (
