@@ -83,12 +83,17 @@ const FloatingStars = memo(function FloatingStars({
     <div
       className={`fixed inset-0 z-50 overflow-hidden pointer-events-none ${className}`}>
       {stars.map((star) => {
-        const isGold = Math.random() > 0.7; // 30% chance for gold
+        const isGold = Math.random() > 0.4; // Increase gold chance to 60%
+        const isViolet = !isGold && Math.random() > 0.5; // 20% chance for violet
         return (
           <motion.div
             key={star.id}
             className={`absolute rounded-full ${
-              isGold ? "bg-yellow-300" : "bg-white"
+              isGold
+                ? "bg-yellow-300"
+                : isViolet
+                ? "bg-violet-400"
+                : "bg-sky-300"
             }`}
             style={{
               left: `${star.x}%`,
@@ -98,7 +103,9 @@ const FloatingStars = memo(function FloatingStars({
               opacity: star.opacity,
               boxShadow: isGold
                 ? `0 0 ${star.size * 2}px rgba(255, 215, 0, 0.4)`
-                : `0 0 ${star.size}px rgba(255, 255, 255, 0.3)`,
+                : isViolet
+                ? `0 0 ${star.size * 2}px rgba(139, 69, 197, 0.4)`
+                : `0 0 ${star.size}px rgba(135, 206, 235, 0.3)`,
             }}
             animate={{
               y: star.direction.y,
