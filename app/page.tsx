@@ -10,96 +10,25 @@ import LoaderSVG from "./components/LoaderSVG";
 import io from "socket.io-client";
 import CasinoRoller from "./components/CasinoRoller";
 
-// Raw JSON data interface (matches your JSON structure)
-interface RawRaffleData {
-  BARCODE: string | number;
-  AREA: string;
-  "BP CODE": number;
-  "BP NAME": string;
-  "OUTLET CODE": string;
-  "OUTLET NAME": string;
-  LOCATION: string;
-  "CHAIN/ IND": string;
-  TIER: string;
-  HEADCOUNT: number;
-  "AWARD Y/N": string;
-}
-
-// Transformed carousel data interface (what your app uses)
-interface CarouselData {
-  id: number;
-  text: string;
-  category: string;
-  image: string;
-  bpName: string;
-  bpCode: number;
-  outletCode: string;
-  area: string;
-  location: string;
-  tier: string;
-  headcount: number;
-  award: string;
-}
-
 export default function MyPage() {
   const [showRaflle, setShowRaflle] = useState(false);
   const [status, setStatus] = useState("IDLE");
-  const [carouselData, setCarouselData] = useState<CarouselData[]>([]);
   const [preloadedBlobUrl, setPreloadedBlobUrl] = useState<string | null>(null);
+  const [showWinnerDetails, setShowWinnerDetails] = useState(false);
+  const [isSpeedUp, setIsSpeedUp] = useState(false);
+  const [isStopped, setIsStopped] = useState(false);
+  const [selectedNumber, setSelectedNumber] = useState<number[]>([2, 0, 0, 4]);
+  const confettiRef = useRef<{ trigger: () => void }>(null);
   const [winnerData, setWinnerData] = useState({
     bpName: "",
     outletName: "",
     imageUrl: "",
+    tokenNumber: "",
   });
-  const [raffleTimeInterval, setRaffleTimeInterval] = useState(400);
-  const [showWinnerDetails, setShowWinnerDetails] = useState(false);
-  // raffle
-  const [isSpeedUp, setIsSpeedUp] = useState(false);
-  const [isStopped, setIsStopped] = useState(false);
-  const [selectedNumber, setSelectedNumber] = useState<number[]>([2, 0, 0, 4]);
-
-  const confettiRef = useRef<{ trigger: () => void }>(null);
 
   const handleConfettiClick = () => {
     confettiRef.current?.trigger();
   };
-
-  // Load carousel data from JSON file
-  useEffect(() => {
-    const loadCarouselData = async () => {
-      try {
-        const response = await fetch("/data/csvjson.json");
-        const jsonData = await response.json();
-
-        // Transform the JSON data to carousel format
-        const transformedData: CarouselData[] = jsonData.map(
-          (item: RawRaffleData, index: number) => ({
-            id: index + 1,
-            text: item["OUTLET NAME"], // Use the outlet name from JSON
-            category: item["CHAIN/ IND"], // Optional: use chain/individual info
-            image:
-              "https://t4.ftcdn.net/jpg/03/83/25/83/360_F_383258331_D8imaEMl8Q3lf7EKU2Pi78Cn0R7KkW9o.jpg", // Default image
-            bpName: item["BP NAME"],
-            bpCode: item["BP CODE"],
-            outletCode: item["OUTLET CODE"],
-            area: item["AREA"],
-            location: item["LOCATION"],
-            tier: item["TIER"],
-            headcount: item["HEADCOUNT"],
-            award: item["AWARD Y/N"],
-          })
-        );
-
-        setCarouselData(transformedData);
-      } catch (error) {
-        console.error("Error loading carousel data:", error);
-        // Fallback to empty array or show error message
-        setCarouselData([]);
-      }
-    };
-
-    loadCarouselData();
-  }, []);
 
   // Add this useEffect to see when winnerData actually updates
   useEffect(() => {
@@ -151,7 +80,11 @@ export default function MyPage() {
           bpName: userData.bpName,
           outletName: userData.outletName,
           imageUrl: userData.imageUrl,
+          tokenNumber: "",
         });
+
+        // ! Update the winner number by making the token nymber the selected number
+        // setSelectedNumber(userData.tokenNumber.split("").map(Number));
         // ADD THIS: Preload the image
         if (userData.imageUrl) {
           console.log("Image:", userData.imageUrl);
@@ -176,14 +109,12 @@ export default function MyPage() {
       console.log("Received frontend-stop-raffle event:", data);
       console.log("Showing winner");
       setIsSpeedUp(true);
-      setRaffleTimeInterval(150);
       setShowWinnerDetails(false);
       setTimeout(() => {
         setStatus("winner-name");
         setIsStopped(true);
         handleConfettiClick();
         setTimeout(() => {
-          setRaffleTimeInterval(400);
           setShowWinnerDetails(true);
         }, 3000);
       }, 2000);
@@ -204,6 +135,7 @@ export default function MyPage() {
         bpName: "",
         outletName: "",
         imageUrl: "",
+        tokenNumber: "",
       });
     });
 
@@ -376,7 +308,7 @@ export default function MyPage() {
       </motion.div>
 
       {/* Loading state for carousel data */}
-      {status === "raffle" && carouselData.length === 0 && (
+      {status === "raffle" && (
         <div className="absolute z-30 flex items-center justify-center">
           <p className="text-white text-2xl">Loading raffle data...</p>
         </div>
