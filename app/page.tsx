@@ -124,10 +124,13 @@ export default function MyPage() {
         setStatus("winner-name");
         setIsStopped(true);
         handleConfettiClick();
-        setTimeout(() => {
-          setShowWinnerDetails(true);
-        }, 3000);
       }, 2000);
+    });
+
+    // Show the details
+    newSocket.on("frontend-show-winner-details", () => {
+      console.log("Showing winner details");
+      setShowWinnerDetails(true);
     });
 
     newSocket.on("frontend-show-winner-details", () => {
@@ -155,7 +158,7 @@ export default function MyPage() {
   }, []);
 
   return (
-    <div className="min-h-screen flex items-center justify-center">
+    <div className="min-h-screen flex items-center justify-center overflow-hidden">
       {/* images and background animations */}
       <>
         <FloatingStars starCount={100} animationSpeed={1} />

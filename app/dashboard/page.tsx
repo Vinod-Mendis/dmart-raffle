@@ -14,6 +14,7 @@ import {
   Clock,
   Zap,
   RefreshCcw,
+  Eye,
 } from "lucide-react";
 
 interface SelectedEntry {
@@ -62,6 +63,15 @@ export default function EventDashboard() {
     if (socket && isConnected) {
       console.log("Emitting stop-raffle event");
       socket.emit("stop-raffle");
+    } else {
+      console.log("Socket not connected");
+    }
+  };
+
+  const handleShowWinnerDetails = () => {
+    if (socket && isConnected) {
+      console.log("Emitting stop-raffle event");
+      socket.emit("show-winner-details");
     } else {
       console.log("Socket not connected");
     }
@@ -127,11 +137,15 @@ export default function EventDashboard() {
       console.log("Showing winner");
       setTimeout(() => {
         setStatus("winner-name");
-        setTimeout(() => {
-          setStatus("winner-details");
-        }, 3000);
       }, 2000);
       addLog(`Showing Winner`, "info");
+    });
+
+    newSocket.on("frontend-show-winner-details", () => {
+      console.log("Showing winner details");
+      setStatus("winner-details");
+
+      addLog("Revealing winner", "success");
     });
 
     // Show IDLE
@@ -171,6 +185,11 @@ export default function EventDashboard() {
     status == "IDLE" ||
     status === "winner-name" ||
     status === "winner-details";
+  const winnerDetailsBtnDisable =
+    !isConnected ||
+    status == "IDLE" ||
+    status === "winner-details" ||
+    status === "raffle";
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -286,7 +305,7 @@ export default function EventDashboard() {
             </h3>
           </div>
           <div className="px-6 pb-6">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <button
                 onClick={handleIDLEScreen}
                 className={`h-16 flex items-center text-white bg-red-400 justify-center gap-2 rounded-lg transition-all duration-200 ${
@@ -321,6 +340,17 @@ export default function EventDashboard() {
                 disabled={winnerBtnDisable}>
                 <Trophy className="h-5 w-5 group-hover:scale-125 transition" />
                 <span className="text-sm font-medium">Show Winner</span>
+              </button>
+              <button
+                onClick={handleShowWinnerDetails}
+                className={`h-16 flex flex-col items-center text-white bg-green-400 justify-center gap-2 rounded-lg border-2 transition-all duration-200 ${
+                  winnerDetailsBtnDisable
+                    ? "opacity-30 cursor-not-allowed"
+                    : "hover:bg-green-500 active:scale-95 cursor-pointer hover:scale-95 group"
+                }`}
+                disabled={winnerDetailsBtnDisable}>
+                <Eye className="h-5 w-5" />
+                <span className="text-sm font-medium">Show Details</span>
               </button>
             </div>
           </div>
