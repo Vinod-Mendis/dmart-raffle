@@ -20,7 +20,7 @@ export default function MyPage() {
   const [selectedNumber, setSelectedNumber] = useState<number[]>([2, 0, 0, 4]);
   const confettiRef = useRef<{ trigger: () => void }>(null);
   const [winnerData, setWinnerData] = useState({
-    bpName: "",
+    retailerName: "",
     outletName: "",
     imageUrl: "",
     tokenNumber: "",
@@ -77,7 +77,7 @@ export default function MyPage() {
         const userData = data.selectedEntry;
 
         setWinnerData({
-          bpName: userData.bpName,
+          retailerName: userData.retailerName,
           outletName: userData.outletName,
           imageUrl: userData.imageUrl,
           tokenNumber: "",
@@ -145,7 +145,7 @@ export default function MyPage() {
       setStatus("IDLE");
       setShowWinnerDetails(false);
       setWinnerData({
-        bpName: "",
+        retailerName: "",
         outletName: "",
         imageUrl: "",
         tokenNumber: "",
@@ -293,8 +293,8 @@ export default function MyPage() {
               {/* Winner Name */}
               <motion.h1
                 className={`${
-                  winnerData.bpName &&
-                  winnerData.bpName.length >
+                  winnerData.retailerName &&
+                  winnerData.retailerName.length >
                     "WICKREMARATNA LOGISTICS (PVT) LTD".length
                     ? "text-4xl"
                     : "text-6xl"
@@ -303,7 +303,7 @@ export default function MyPage() {
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.6, ease: "easeOut", delay: 0.4 }}
                 layout>
-                {winnerData.bpName || "no bp name"}
+                {winnerData.retailerName || "no bp name"}
               </motion.h1>
 
               {/* Winner Category */}
