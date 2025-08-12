@@ -83,8 +83,18 @@ export default function MyPage() {
           tokenNumber: "",
         });
 
-        // ! Update the winner number by making the token nymber the selected number
-        // setSelectedNumber(userData.tokenNumber.split("").map(Number));
+        // ! check token
+        // UPDATE THIS SECTION - Handle token number for selectedNumber
+        if (userData.token && userData.token.trim() !== "") {
+          // If token exists and is not empty, convert to array of numbers
+          const tokenArray = userData.token.split("").map(Number);
+          // Pad with zeros if less than 4 digits, or truncate if more than 4
+          const paddedToken = [...tokenArray, 0, 0, 0, 0].slice(0, 4);
+          setSelectedNumber(paddedToken);
+        } else {
+          // If no token or empty token, show x x x x (represented as -1 for display)
+          setSelectedNumber([-1, -1, -1, -1]);
+        }
         // ADD THIS: Preload the image
         if (userData.imageUrl) {
           console.log("Image:", userData.imageUrl);
@@ -306,13 +316,6 @@ export default function MyPage() {
           )}
         </AnimatePresence>
       </motion.div>
-
-      {/* Loading state for carousel data */}
-      {status === "raffle" && (
-        <div className="absolute z-30 flex items-center justify-center">
-          <p className="text-white text-2xl">Loading raffle data...</p>
-        </div>
-      )}
     </div>
   );
 }
