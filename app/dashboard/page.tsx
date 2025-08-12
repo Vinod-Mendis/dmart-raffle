@@ -18,7 +18,7 @@ import {
 } from "lucide-react";
 
 interface SelectedEntry {
-  bpName: string;
+  retailerName: string;
   outletName: string;
   imageUrl: string;
 }
@@ -36,7 +36,7 @@ export default function EventDashboard() {
 
   // Winner data state - will be populated from socket data
   const [winnerData, setWinnerData] = useState({
-    bpName: "",
+    retailerName: "",
     outletName: "",
     imageUrl: "",
   });
@@ -113,20 +113,20 @@ export default function EventDashboard() {
 
     newSocket.on("frontend-start-raffle", (data) => {
       console.log("Received frontend-start-raffle event:", data);
-      console.log("Selected raffle entry:", data.selectedEntry.bpName);
+      console.log("Selected raffle entry:", data.selectedEntry.retailerName);
       setStatus("raffle");
       setSelectedEntry(data.selectedEntry);
 
       if (data.selectedEntry) {
         const userData = data.selectedEntry;
         setWinnerData({
-          bpName: userData.bpName,
+          retailerName: userData.retailerName,
           outletName: userData.outletName,
           imageUrl: userData.imageUrl,
         });
       }
       addLog(
-        `Winner data received: ${data.selectedEntry?.bpName || "Unknown"}`,
+        `Winner data received: ${data.selectedEntry?.retailerName || "Unknown"}`,
         "info"
       );
     });
@@ -155,7 +155,7 @@ export default function EventDashboard() {
       addLog("Switched to IDLE Screen", "info");
       setSelectedEntry(null);
       setWinnerData({
-        bpName: "",
+        retailerName: "",
         outletName: "",
         imageUrl: "",
       });
@@ -289,7 +289,7 @@ export default function EventDashboard() {
               </span>
               {selectedEntry && (
                 <p className="text-sm text-slate-600 mt-2">
-                  Selected: {selectedEntry.bpName}
+                  Selected: {selectedEntry.retailerName}
                 </p>
               )}
             </div>
