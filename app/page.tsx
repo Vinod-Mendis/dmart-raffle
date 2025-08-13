@@ -303,7 +303,7 @@ export default function MyPage() {
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.6, ease: "easeOut", delay: 0.4 }}
                 layout>
-                {winnerData.retailerName || "no bp name"}
+                {winnerData.retailerName || "No Name"}
               </motion.h1>
 
               {/* Winner Category */}
@@ -313,7 +313,7 @@ export default function MyPage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, ease: "easeOut", delay: 0.5 }}
                 layout>
-                {winnerData.outletName || "no outlet name"}
+                {winnerData.outletName || "No Outlet name"}
               </motion.h1>
             </motion.div>
           )}
