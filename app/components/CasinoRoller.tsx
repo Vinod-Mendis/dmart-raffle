@@ -13,26 +13,6 @@ const CasinoRoller: React.FC<CasinoRollerProps> = ({
   isStopped,
   selectedNumber,
 }) => {
-  //   const [isSpeedUp, setIsSpeedUp] = useState(false);
-  //   const [isStopped, setIsStopped] = useState(false);
-  //   const selectedNumber = [2, 0, 0, 4]; // The target number to show when stopped
-
-  //   const speedUp = () => {
-  //     setIsSpeedUp(true);
-  //   };
-
-  //   const slowDown = () => {
-  //     setIsSpeedUp(false);
-  //   };
-
-  //   const stop = () => {
-  //     setIsStopped(true);
-  //   };
-
-  //   const restart = () => {
-  //     setIsStopped(false);
-  //   };
-
   return (
     <div className="relative z-50 flex flex-col items-center justify-center">
       <div
@@ -42,58 +22,24 @@ const CasinoRoller: React.FC<CasinoRollerProps> = ({
         {[0, 1, 2, 3].map((index) => (
           <DigitColumn
             key={index}
+            columnIndex={index} // Add unique index for each column
             isSpeedUp={isSpeedUp}
             isStopped={isStopped}
             targetDigit={selectedNumber[index]}
           />
         ))}
       </div>
-
-      {/* {isStopped && (
-        <div className="text-3xl font-bold text-yellow-300 mb-4 animate-bounce">
-          🎉 WINNER! 🎉
-        </div>
-      )} */}
-
-      {/* <div className="flex gap-4">
-        {!isStopped ? (
-          <>
-            <button
-              onClick={speedUp}
-              className="px-8 py-3 bg-green-600 hover:bg-green-700 text-white text-xl font-bold rounded-lg transition-colors shadow-lg">
-              SPEED UP
-            </button>
-
-            <button
-              onClick={slowDown}
-              className="px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white text-xl font-bold rounded-lg transition-colors shadow-lg">
-              SLOW DOWN
-            </button>
-
-            <button
-              onClick={stop}
-              className="px-8 py-3 bg-red-600 hover:bg-red-700 text-white text-xl font-bold rounded-lg transition-colors shadow-lg">
-              STOP
-            </button>
-          </>
-        ) : (
-          <button
-            onClick={restart}
-            className="px-8 py-3 bg-green-600 hover:bg-green-700 text-white text-xl font-bold rounded-lg transition-colors shadow-lg">
-            RESTART
-          </button>
-        )}
-      </div> */}
     </div>
   );
 };
 
 const DigitColumn: React.FC<{
+  columnIndex: number; // Add column index prop
   isSpeedUp: boolean;
   isStopped: boolean;
   targetDigit: number;
-}> = ({ isSpeedUp, isStopped, targetDigit }) => {
-  const [offset, setOffset] = useState(0);
+}> = ({ columnIndex, isSpeedUp, isStopped, targetDigit }) => {
+  const [offset, setOffset] = useState(columnIndex * 3); // Start each column at different position
 
   useEffect(() => {
     if (isStopped) {
@@ -105,7 +51,7 @@ const DigitColumn: React.FC<{
     const intervalTime = isSpeedUp ? 30 : 200; // Fast: 30ms, Normal: 200ms
 
     const intervalId = setInterval(() => {
-      setOffset((prev) => prev + 1); // Remove modulo - let it increment continuously
+      setOffset((prev) => prev + 1);
     }, intervalTime);
 
     return () => clearInterval(intervalId);
@@ -133,16 +79,6 @@ const DigitColumn: React.FC<{
           </div>
         ))}
       </div>
-
-      {/* Winner sparkle effects */}
-      {/* {isStopped && (
-        <>
-          <div className="absolute -top-1 -left-1 w-3 h-3 bg-yellow-400 rounded-full animate-ping"></div>
-          <div className="absolute -top-1 -right-1 w-2 h-2 bg-yellow-300 rounded-full animate-ping delay-100"></div>
-          <div className="absolute -bottom-1 -left-1 w-2 h-2 bg-yellow-300 rounded-full animate-ping delay-200"></div>
-          <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-yellow-400 rounded-full animate-pink delay-300"></div>
-        </>
-      )} */}
     </div>
   );
 };
