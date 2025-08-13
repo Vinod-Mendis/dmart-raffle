@@ -168,7 +168,7 @@ export default function MyPage() {
         {/* Background image */}
         <div className="w-full h-screen absolute inset-0 z-0">
           <img
-            src="/images/background-2.png"
+            src="/images/background-2.webp"
             alt="background image"
             className="w-full h-full object-fill object-center"
           />
@@ -176,7 +176,7 @@ export default function MyPage() {
         {/* Golden frame */}
         <div className="w-full h-screen absolute inset-0 z-10">
           <img
-            src="/images/golden-frame.png"
+            src="/images/golden-frame.webp"
             alt="golden-frame"
             className="w-full h-full object-fill"
           />
@@ -195,7 +195,7 @@ export default function MyPage() {
               transition={{ duration: 0.4, ease: "easeInOut" }}
               className="w-[35rem] h-auto aspect-square scale-animation">
               <img
-                src="/images/dmart-logo-1.png"
+                src="/images/dmart-logo-1.webp"
                 alt="logo"
                 className="w-full h-full object-cover"
               />
